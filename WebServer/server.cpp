@@ -483,17 +483,16 @@ void WebServer::del(std::string route, Response (*responseFunction)(Request &), 
 std::string WebServer::searchGETTree(Request &requestObject) {
     std::string route = requestObject.getRequestRoute();
     Node* searchedRoute = GetRouteTree.search(requestObject);
-    if(searchedRoute->containsResponseObject){
-        // Interrupted by a Middleware
-        return searchedRoute->response.getHttpResponse();
-    }
     std::string response;
     if(searchedRoute == NULL){
         std::cerr<<"GET "<<route<<": Not Found"<<std::endl;
         std::string rawResponse = R"({"error": "Not Found"})";
         return response = "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " + std::to_string(rawResponse.size()) + "\r\n\r\n" + rawResponse;
     }
-
+    if(searchedRoute->containsResponseObject){
+        // Interrupted by a Middleware
+        return searchedRoute->response.getHttpResponse();
+    }
     Response responseObject = (searchedRoute->responseFunction)(requestObject);
     response = responseObject.getHttpResponse();
     std::cout<<"GET "<<route<<std::endl;
@@ -513,17 +512,16 @@ std::string WebServer::searchGETTree(Request &requestObject) {
 std::string WebServer::searchPOSTTree(Request &requestObject){
     std::string route = requestObject.getRequestRoute();
     Node* searchedRoute = PostRouteTree.search(requestObject);
-    if(searchedRoute->containsResponseObject){
-        // Interrupted by a Middleware
-        return searchedRoute->response.getHttpResponse();
-    }
     std::string response;
     if(searchedRoute == NULL){
         std::cerr<<"POST "<<route<<": Not Found"<<std::endl;
         std::string rawResponse = R"({"error": "Not Found"})";
         return response = "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " + std::to_string(rawResponse.size()) + "\r\n\r\n" + rawResponse;
     }
-
+    if(searchedRoute->containsResponseObject){
+        // Interrupted by a Middleware
+        return searchedRoute->response.getHttpResponse();
+    }
     Response responseObject = (searchedRoute->responseFunction)(requestObject);
     response = responseObject.getHttpResponse();
     std::cout<<"POST "<<route<<std::endl;
@@ -543,17 +541,16 @@ std::string WebServer::searchPOSTTree(Request &requestObject){
 std::string WebServer::searchPUTTree(Request &requestObject){
     std::string route = requestObject.getRequestRoute();
     Node* searchedRoute = PutRouteTree.search(requestObject);
-    if(searchedRoute->containsResponseObject){
-        // Interrupted by a Middleware
-        return searchedRoute->response.getHttpResponse();
-    }
     std::string response;
     if(searchedRoute == NULL){
         std::cerr<<"PUT "<<route<<": Not Found"<<std::endl;
         std::string rawResponse = R"({"error": "Page Not Found"})";
         return response = "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " + std::to_string(rawResponse.size()) + "\r\n\r\n" + rawResponse;
     }
-
+    if(searchedRoute->containsResponseObject){
+        // Interrupted by a Middleware
+        return searchedRoute->response.getHttpResponse();
+    }
     Response responseObject = (searchedRoute->responseFunction)(requestObject);
     response = responseObject.getHttpResponse();
     std::cout<<"PUT "<<route<<std::endl;
@@ -573,17 +570,16 @@ std::string WebServer::searchPUTTree(Request &requestObject){
 std::string WebServer::searchPATCHTree(Request &requestObject){
     std::string route = requestObject.getRequestRoute();
     Node* searchedRoute = PatchRouteTree.search(requestObject);
-    if(searchedRoute->containsResponseObject){
-        // Interrupted by a Middleware
-        return searchedRoute->response.getHttpResponse();
-    }
     std::string response;
     if(searchedRoute == NULL){
         std::cerr<<"PATCH "<<route<<": Not Found"<<std::endl;
         std::string rawResponse = R"({"error": "Page Not Found"})";
         return response = "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " + std::to_string(rawResponse.size()) + "\r\n\r\n" + rawResponse;
     }
-
+    if(searchedRoute->containsResponseObject){
+        // Interrupted by a Middleware
+        return searchedRoute->response.getHttpResponse();
+    }
     Response responseObject = (searchedRoute->responseFunction)(requestObject);
     response = responseObject.getHttpResponse();
     std::cout<<"PATCH "<<route<<std::endl;
@@ -603,17 +599,16 @@ std::string WebServer::searchPATCHTree(Request &requestObject){
 std::string WebServer::searchDELETETree(Request &requestObject){
     std::string route = requestObject.getRequestRoute();
     Node* searchedRoute = DeleteRouteTree.search(requestObject);
-    if(searchedRoute->containsResponseObject){
-        // Interrupted by a Middleware
-        return searchedRoute->response.getHttpResponse();
-    }
     std::string response;
     if(searchedRoute == NULL){
         std::cerr<<"DELETE "<<route<<": Not Found"<<std::endl;
         std::string rawResponse = R"({"error": "Page Not Found"})";
         return response = "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " + std::to_string(rawResponse.size()) + "\r\n\r\n" + rawResponse;
     }
-
+    if(searchedRoute->containsResponseObject){
+        // Interrupted by a Middleware
+        return searchedRoute->response.getHttpResponse();
+    }
     Response responseObject = (searchedRoute->responseFunction)(requestObject);
     response = responseObject.getHttpResponse();
     std::cout<<"DELETE "<<route<<std::endl;
