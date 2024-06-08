@@ -172,8 +172,6 @@ server.get("/", &HomePage);
 
 Run the server and visit `localhost:5000` to see the rendered `index.html`.
 
-### Documentation
-
 #### 4. Redirect to a Page
 
 To redirect to a page, you can use the `redirect()` method in the response object. The redirected URLs can be relative or absolute URL.
