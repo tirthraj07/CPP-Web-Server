@@ -50,7 +50,7 @@ cd Project
 ### Step 2: Clone the Repository
 
 ```bash
-git clone https://github.com/tirthraj07/CPP-Web-Server.git
+git clone https://github.com/tirthraj07/CPP-Web-Server.git .
 ```
 
 ### Step 3: Open the Project Directory in Terminal and Compile the Code
