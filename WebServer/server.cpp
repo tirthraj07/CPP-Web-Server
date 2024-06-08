@@ -8,8 +8,6 @@
 #include <cstring>
 #include <sstream>
 
-// using ResponseFunction = Response (*)();
-
 #pragma comment(lib, "ws2_32.lib")
 
 

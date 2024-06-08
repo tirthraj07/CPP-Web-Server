@@ -1,6 +1,5 @@
 #ifndef RESPONSE_H
 #define RESPONSE_H
-// #include <server.h>
 #include <iostream>
 #include <string>
 #include <fstream>
