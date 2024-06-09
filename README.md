@@ -76,6 +76,7 @@ g++ -o demo demo.cpp Webserver/*.cpp sqlite3.dll -lws2_32 -I./Webserver
 *   You can __create routes__ by linking them to functions (similar to Flask and Express)
 *   __Supports chaining multiple middleware functions__ for request processing
 *   __Supports HTTP redirection__ to different URLs
+*   __Supports SQLite Database Connectivity__ 
 
 # Documentation
 
@@ -86,22 +87,23 @@ To get started, your project needs to contain the following file structure:
 ```
 Project
 	demo.cpp (Server)
-  sqlite3.dll
+  	sqlite3.dll
 	WebServer
-		templates
-			index.html
-			(other html files to be rendered)
-		static
-			css
-				style.css
-				(other css files to be linked)
-			js
-				script.js
-				(other js files to be linked)
-		public
-			(images, pdfs, etc. to be rendered)
-    database
-      database.db
+	templates
+		index.html
+		(other html files to be rendered)
+	static
+		css
+			style.css
+			(other css files to be linked)
+		js
+			script.js
+			(other js files to be linked)
+	public
+		(images, pdfs, etc. to be rendered)
+	database
+		database.db
+		(other database files)
 ```
 
 #### 2. Run the Server
@@ -353,6 +355,60 @@ treasureRouteMiddleware.push(anotherMiddlewareFunctionForTreasurePage);
 // Link the route with function and middleware list
 server.get("/treasure", &loadTreasurePage, treasureRouteMiddleware);
 ```
+
+#### 10. Add SQLite database
+The `Webserver` libaray supports __SQLite__ database by using `sqlite3.h`. 
+Include the `database.h` file from `WebServer` and create an instance of the `SQLiteDatabase` class by specifying the database file name inside `database` folder
+
+```cpp
+#include <WebServer/database.h>
+
+SqliteDatabase database("database.db");
+```
+
+The `SqliteDatabase` class provides four main methods: `executeQuery()` , `executeParameterizedQuery()` , `executeSelectQuery` and `databaseError()`  
+
+#### CREATE and DELETE Operations
+These operations can be performed using `executeQuery()` function. The `executeQuery()` function returns a type `bool` determining the `success` of the operation
+
+__RETURN VALUE__ -> `True` is query is successful | `False` if the query is unsuccessful
+
+Example of __CREATE__ operation:
+```cpp
+// Initializes the database
+#include <WebServer/database.h>
+
+SqliteDatabase database("database.db");
+
+bool InitDatabase(){
+    std::string query = "CREATE TABLE IF NOT EXISTS users (" \
+                       "NAME TEXT NOT NULL," \
+                       "EMAIL TEXT NOT NULL PRIMARY KEY" \
+                       ");";
+
+    bool success = database.executeQuery(query);
+    if(success == false){
+        std::cerr << "Database Initialization Failed" << std::endl;
+        return false;
+    }
+
+    std::cerr << "Database Initialization Success" << std::endl;
+    return true;
+
+}
+
+// Initialize the database and run the server
+if(InitDatabase()){
+	// Run the server
+	server.run();        
+};
+
+```
+
+#### `databaseError()` Method of the `SqliteDatabase` Class
+The `databaseError()` function returns the most recent error which occured associated to the database connection
+
+For example: We can modify the existing 
 
 ---
 
