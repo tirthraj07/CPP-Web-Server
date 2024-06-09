@@ -1,8 +1,12 @@
+#include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "WebServer/server.h"
+#include "WebServer/database.h"
 
+SqliteDatabase database("database.db");
 
 // Function that handles '/' route
 Response HomePage(Request& req){
@@ -100,8 +104,21 @@ Response POSTRequestAPI(Request& req){
 
     std::cout<<"Entered name: "<<name<<std::endl;
     std::cout<<"Entered email: "<<email<<std::endl;
-    res.setContent(R"({"status":"success"})");
-    res.setStatusCode(201);
+
+    std::vector<SqliteDatabase::SqlParam> params;
+    params.emplace_back(name);
+    params.emplace_back(email);
+
+    bool success = database.executeParameterizedQuery("INSERT INTO users (NAME, EMAIL) VALUES (?, ?)", params);
+    if(success){
+        res.setContent(R"({"status":"success"})");
+        res.setStatusCode(201);
+    }
+    else {
+        std::string jsonErrorMessage = R"({"status":")" + database.databaseError() + R"("})";
+        res.setContent(jsonErrorMessage);
+        res.setStatusCode(400);
+    }
     return res;
 }
 
@@ -133,6 +150,23 @@ Response loadTreasurePage(Request& req){
 }
 
 
+bool InitDatabase(){
+    std::string sql = "CREATE TABLE IF NOT EXISTS users (" \
+                       "NAME TEXT NOT NULL," \
+                       "EMAIL TEXT NOT NULL PRIMARY KEY" \
+                       ");";
+
+    bool success = database.executeQuery(sql);
+    if(success == false){
+        std::cerr << "Database Initialization Failed" << std::endl;
+        return false;
+    }
+
+    std::cerr << "Database Initialization Success" << std::endl;
+    return true;
+
+}
+
 int main(){
 
     // Declaring the PORT and IP Address
@@ -163,6 +197,9 @@ int main(){
     server.post("/api/form", &POSTRequestAPI);
 
 
-    // Run the server
-    server.run();
+    // Initialize the database and run the server
+    if(InitDatabase()){
+        // Run the server
+        server.run();        
+    };
 }

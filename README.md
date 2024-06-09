@@ -56,7 +56,7 @@ git clone https://github.com/tirthraj07/CPP-Web-Server.git .
 ### Step 3: Open the Project Directory in Terminal and Compile the Code
 
 ```bash
-g++ -o demo demo.cpp Webserver/*.cpp -lws2_32 -I./Webserver
+g++ -o demo demo.cpp Webserver/*.cpp sqlite3.dll -lws2_32 -I./Webserver
 ```
 
 ### Step 4: Run the Code
@@ -86,6 +86,7 @@ To get started, your project needs to contain the following file structure:
 ```
 Project
 	demo.cpp (Server)
+  sqlite3.dll
 	WebServer
 		templates
 			index.html
@@ -99,6 +100,8 @@ Project
 				(other js files to be linked)
 		public
 			(images, pdfs, etc. to be rendered)
+    database
+      database.db
 ```
 
 #### 2. Run the Server
