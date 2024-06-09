@@ -37,6 +37,7 @@ To use this framework, you need the following:
 - C++ Compiler (e.g., g++)
 - Git (for cloning the repository)
 - Windows Operating System
+- sqlite3.dll file
 
 ## Installation
 
@@ -370,6 +371,7 @@ The `SqliteDatabase` class provides four main methods: `executeQuery()` , `execu
 
 #### CREATE and DELETE Operations
 These operations can be performed using `executeQuery()` function. The `executeQuery()` function returns a type `bool` determining the `success` of the operation
+The parameter is `query` which is type `std::string`
 
 __RETURN VALUE__ -> `True` is query is successful | `False` if the query is unsuccessful
 
@@ -408,8 +410,87 @@ if(InitDatabase()){
 #### `databaseError()` Method of the `SqliteDatabase` Class
 The `databaseError()` function returns the most recent error which occured associated to the database connection
 
-For example: We can modify the existing 
+For example: We can modify the existing initDatabase() function to log the error message if the database failed to initialize.
 
+```cpp
+bool InitDatabase(){
+    std::string query = "CREATE TABLE IF NOT EXISTS users (" \
+                       "NAME TEXT NOT NULL," \
+                       "EMAIL TEXT NOT NULL PRIMARY KEY" \
+                       ");";
+
+    bool success = database.executeQuery(query);
+    if(success == false){
+        std::cerr << "Database Initialization Failed" << database.databaseError() << std::endl;
+        return false;
+    }
+
+    std::cerr << "Database Initialization Success" << std::endl;
+    return true;
+
+}
+```
+
+#### INSERT Operation  
+
+The __INSERT__ operation can be performed using the `executeParameterizedQuery()`.
+The parameters:
+`std::string query`
+`std::vector < SqliteDatabase::SqlParam> params`
+
+__RETURN VALUE__ : The return value if type `bool` indicating the success of the operation. `True` if insertion is successful | `False` if insertion is unsuccessful  
+
+For Example:
+
+```cpp
+Response POSTRequestAPI(Request& req){
+    std::unordered_map<std::string, std::string> requestBody = req.getRequestBody();
+    std::string name = requestBody["name"];
+    std::string email = requestBody["email"];
+
+    // Do validation of the query parameters
+
+    Response res;
+    res.setContentType("application/json");
+
+    std::vector<SqliteDatabase::SqlParam> params;
+    params.emplace_back(name);
+    params.emplace_back(email);
+
+    bool success = database.executeParameterizedQuery("INSERT INTO users (NAME, EMAIL) VALUES (?, ?)", params);
+    if(success){
+        res.setContent(R"({"status":"success"})");
+        res.setStatusCode(201);
+    }
+    else {
+        std::string jsonErrorMessage = R"({"status":")" + database.databaseError() + R"("})";
+        res.setContent(jsonErrorMessage);
+        res.setStatusCode(400);
+    }
+    return res;
+}
+
+```
+
+#### SELECT Operation  
+The __SELECT__ operation can be perfromed using the `executeSelectQuery()` operation.
+The input parameter is `query` of type `std::string`
+
+__RETURN VALUE__ : The return value is of type `std::vector<std::vector<std::string>>`.  
+
+For example:
+
+```cpp
+std::vector<std::vector<std::string>> result = database.executeSelectQuery("SELECT * FROM users;");
+
+for(int i=0; i<result.size(); i++){
+	for(int j=0; j<result[0].size(); j++){
+	    std::cout<< result[i][j] << " ";
+	}
+	std::cout<<std::endl;
+}
+
+```
 ---
 
 # Library Documentation
