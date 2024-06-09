@@ -37,6 +37,7 @@ To use this framework, you need the following:
 - C++ Compiler (e.g., g++)
 - Git (for cloning the repository)
 - Windows Operating System
+- sqlite3.dll file
 
 ## Installation
 
@@ -76,6 +77,7 @@ g++ -o demo demo.cpp Webserver/*.cpp sqlite3.dll -lws2_32 -I./Webserver
 *   You can __create routes__ by linking them to functions (similar to Flask and Express)
 *   __Supports chaining multiple middleware functions__ for request processing
 *   __Supports HTTP redirection__ to different URLs
+*   __Supports SQLite Database Connectivity__ 
 
 # Documentation
 
@@ -86,22 +88,23 @@ To get started, your project needs to contain the following file structure:
 ```
 Project
 	demo.cpp (Server)
-  sqlite3.dll
+  	sqlite3.dll
 	WebServer
-		templates
-			index.html
-			(other html files to be rendered)
-		static
-			css
-				style.css
-				(other css files to be linked)
-			js
-				script.js
-				(other js files to be linked)
-		public
-			(images, pdfs, etc. to be rendered)
-    database
-      database.db
+	templates
+		index.html
+		(other html files to be rendered)
+	static
+		css
+			style.css
+			(other css files to be linked)
+		js
+			script.js
+			(other js files to be linked)
+	public
+		(images, pdfs, etc. to be rendered)
+	database
+		database.db
+		(other database files)
 ```
 
 #### 2. Run the Server
@@ -354,6 +357,140 @@ treasureRouteMiddleware.push(anotherMiddlewareFunctionForTreasurePage);
 server.get("/treasure", &loadTreasurePage, treasureRouteMiddleware);
 ```
 
+#### 10. Add SQLite database
+The `Webserver` libaray supports __SQLite__ database by using `sqlite3.h`. 
+Include the `database.h` file from `WebServer` and create an instance of the `SQLiteDatabase` class by specifying the database file name inside `database` folder
+
+```cpp
+#include <WebServer/database.h>
+
+SqliteDatabase database("database.db");
+```
+
+The `SqliteDatabase` class provides four main methods: `executeQuery()` , `executeParameterizedQuery()` , `executeSelectQuery` and `databaseError()`  
+
+#### CREATE and DELETE Operations
+These operations can be performed using `executeQuery()` function. The `executeQuery()` function returns a type `bool` determining the `success` of the operation
+The parameter is `query` which is type `std::string`
+
+__RETURN VALUE__ -> `True` is query is successful | `False` if the query is unsuccessful
+
+Example of __CREATE__ operation:
+```cpp
+// Initializes the database
+#include <WebServer/database.h>
+
+SqliteDatabase database("database.db");
+
+bool InitDatabase(){
+    std::string query = "CREATE TABLE IF NOT EXISTS users (" \
+                       "NAME TEXT NOT NULL," \
+                       "EMAIL TEXT NOT NULL PRIMARY KEY" \
+                       ");";
+
+    bool success = database.executeQuery(query);
+    if(success == false){
+        std::cerr << "Database Initialization Failed" << std::endl;
+        return false;
+    }
+
+    std::cerr << "Database Initialization Success" << std::endl;
+    return true;
+
+}
+
+// Initialize the database and run the server
+if(InitDatabase()){
+	// Run the server
+	server.run();        
+};
+
+```
+
+#### `databaseError()` Method of the `SqliteDatabase` Class
+The `databaseError()` function returns the most recent error which occured associated to the database connection
+
+For example: We can modify the existing initDatabase() function to log the error message if the database failed to initialize.
+
+```cpp
+bool InitDatabase(){
+    std::string query = "CREATE TABLE IF NOT EXISTS users (" \
+                       "NAME TEXT NOT NULL," \
+                       "EMAIL TEXT NOT NULL PRIMARY KEY" \
+                       ");";
+
+    bool success = database.executeQuery(query);
+    if(success == false){
+        std::cerr << "Database Initialization Failed" << database.databaseError() << std::endl;
+        return false;
+    }
+
+    std::cerr << "Database Initialization Success" << std::endl;
+    return true;
+
+}
+```
+
+#### INSERT Operation  
+
+The __INSERT__ operation can be performed using the `executeParameterizedQuery()`.
+The parameters:
+`std::string query`
+`std::vector < SqliteDatabase::SqlParam> params`
+
+__RETURN VALUE__ : The return value if type `bool` indicating the success of the operation. `True` if insertion is successful | `False` if insertion is unsuccessful  
+
+For Example:
+
+```cpp
+Response POSTRequestAPI(Request& req){
+    std::unordered_map<std::string, std::string> requestBody = req.getRequestBody();
+    std::string name = requestBody["name"];
+    std::string email = requestBody["email"];
+
+    // Do validation of the query parameters
+
+    Response res;
+    res.setContentType("application/json");
+
+    std::vector<SqliteDatabase::SqlParam> params;
+    params.emplace_back(name);
+    params.emplace_back(email);
+
+    bool success = database.executeParameterizedQuery("INSERT INTO users (NAME, EMAIL) VALUES (?, ?)", params);
+    if(success){
+        res.setContent(R"({"status":"success"})");
+        res.setStatusCode(201);
+    }
+    else {
+        std::string jsonErrorMessage = R"({"status":")" + database.databaseError() + R"("})";
+        res.setContent(jsonErrorMessage);
+        res.setStatusCode(400);
+    }
+    return res;
+}
+
+```
+
+#### SELECT Operation  
+The __SELECT__ operation can be perfromed using the `executeSelectQuery()` operation.
+The input parameter is `query` of type `std::string`
+
+__RETURN VALUE__ : The return value is of type `std::vector<std::vector<std::string>>`.  
+
+For example:
+
+```cpp
+std::vector<std::vector<std::string>> result = database.executeSelectQuery("SELECT * FROM users;");
+
+for(int i=0; i<result.size(); i++){
+	for(int j=0; j<result[0].size(); j++){
+	    std::cout<< result[i][j] << " ";
+	}
+	std::cout<<std::endl;
+}
+
+```
 ---
 
 # Library Documentation
